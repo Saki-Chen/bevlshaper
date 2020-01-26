@@ -8,10 +8,14 @@ import sys
 ORIGIN_X = 0
 ORIGIN_Y = 0
 ORIGIN_CIRCLE_RADIUS = 6.1
-PATCH_X = -18
-PATCH_Y = -10.5
-PATCH_WIDTH = 80
-PATCH_HEIGHT = 21
+# PATCH_X = -18
+# PATCH_Y = -10.5
+# PATCH_WIDTH = 80
+# PATCH_HEIGHT = 21
+PATCH_X = 8
+PATCH_Y = 6
+PATCH_WIDTH = 8
+PATCH_HEIGHT = 6
 
 # Render 2D bird's-eye-view scene from PCL data
 def render_2Dbev(frame, dataset, tracklet_rects, tracklet_types, points=0.4):
@@ -25,13 +29,14 @@ def render_2Dbev(frame, dataset, tracklet_rects, tracklet_types, points=0.4):
     dataset_velo = list(dataset.velo)
     velo_range = range(0, dataset_velo[frame].shape[0], points_step)
     velo_frame = dataset_velo[frame][velo_range, :]
-    velo_frame = filter_ground_plane(velo_frame)
-    velo_frame = apply_circular_mask(velo_frame, [ORIGIN_X, ORIGIN_Y], ORIGIN_CIRCLE_RADIUS)
-    velo_frame = apply_rectangular_mask(velo_frame, [PATCH_X, PATCH_Y], PATCH_WIDTH, PATCH_HEIGHT)
+    # velo_frame = filter_ground_plane(velo_frame)
+    # velo_frame = apply_circular_mask(velo_frame, [ORIGIN_X, ORIGIN_Y], ORIGIN_CIRCLE_RADIUS)
+    # velo_frame = apply_rectangular_mask(velo_frame, [PATCH_X, PATCH_Y], PATCH_WIDTH, PATCH_HEIGHT)
 
     # Extract coordinate ranges
     z_values = velo_frame[:, 3]
     velo_frame = velo_frame[:, [0, 1]]
+    print(velo_frame.shape)
 
     # Draw scatter plot
     axis.scatter(*np.transpose(velo_frame), s=point_size, c=z_values, cmap='gray')
@@ -68,7 +73,7 @@ frames = []
 n_frames = len(list(dataset.velo))
 print('Preparing animation frames...')
 # for frame in range(n_frames):
-for frame in [16, 32, 50]:
+for frame in [16]:
     print_progress(frame, n_frames - 1)
     filename = render_2Dbev(frame, dataset, tracklet_rects, tracklet_types)
     frames += [filename]
