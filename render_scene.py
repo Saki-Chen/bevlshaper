@@ -7,15 +7,11 @@ import sys
 # Constants
 ORIGIN_X = 0
 ORIGIN_Y = 0
-ORIGIN_CIRCLE_RADIUS = 6.1
-# PATCH_X = -18
-# PATCH_Y = -10.5
-# PATCH_WIDTH = 80
-# PATCH_HEIGHT = 21
-PATCH_X = 8
-PATCH_Y = 6
-PATCH_WIDTH = 8
-PATCH_HEIGHT = 6
+ORIGIN_CIRCLE_RADIUS = 6.3
+PATCH_X = -5
+PATCH_Y = -1.5
+PATCH_WIDTH = 50
+PATCH_HEIGHT = 12
 
 # Render 2D bird's-eye-view scene from PCL data
 def render_2Dbev(frame, dataset, tracklet_rects, tracklet_types, points=0.4):

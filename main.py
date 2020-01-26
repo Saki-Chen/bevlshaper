@@ -3,28 +3,32 @@ from exploreKITTI.explore_kitti_lib import *
 from adaptive_segmentation import *
 from pcl_filter import *
 import matplotlib.pyplot as plt
-# import matplotlib.patches as ptch
-import numpy.matlib
 
 # Constants
-POINTS_RATIO = 0.15
 COLORS = ['red', 'green', 'blue', 'yellow']
-
-# Make radius adaptive
-RADIUS = 0.35
+ALPHA = 0.0257
+POINTS_RATIO = 0.1062
+MIN_CLUSTER_LEN = 22
+MAX_CLUSTER_LEN = 65
 
 ORIGIN_X = 0
 ORIGIN_Y = 0
 ORIGIN_CIRCLE_RADIUS = 6.1
+## Sample
+# PATCH_X = 8
+# PATCH_Y = 6
+# PATCH_WIDTH = 8
+# PATCH_HEIGHT = 6
+## Full
 # PATCH_X = -18
 # PATCH_Y = -10.5
 # PATCH_WIDTH = 80
 # PATCH_HEIGHT = 21
-
-PATCH_X = 8
-PATCH_Y = 6
-PATCH_WIDTH = 8
-PATCH_HEIGHT = 6
+## Full lane
+PATCH_X = -2
+PATCH_Y = -1.5
+PATCH_WIDTH = 40
+PATCH_HEIGHT = 12
 
 
 # Get PCL from frame function
@@ -51,11 +55,11 @@ def render_2Dbev(frame, data, clusters, points=POINTS_RATIO, colors=COLORS):
     axis.set_xlim(*axes_limits[0])
     axis.set_ylim(*axes_limits[1])
 
-    # Draw clusters
+    # Draw cluster points
     cnt = 0
     for cluster in clusters:
-        cntn = np.mod(cnt, len(colors))
-        axis.scatter(*np.transpose(cluster), s=point_size, c=colors[cntn], cmap='gray')
+        cntc = np.mod(cnt, len(colors))
+        axis.scatter(*np.transpose(cluster), s=point_size, c=colors[cntc], cmap='gray')
         cnt += 1
 
     # Save frame and close plot
@@ -74,20 +78,19 @@ dataset = load_dataset(date, drive)
 dataset = list(dataset.velo)
 
 # Select frame
-# for frame in range(len(dataset)):
-frame = 16
+for frame in [28, 38, 53]:
+    # Filter point cloud
+    velo_frame = get_pcl_from_frame(dataset, frame)
+    velo_frame = filter_ground_plane(velo_frame)
+    velo_frame = apply_circular_mask(velo_frame, [ORIGIN_X, ORIGIN_Y], ORIGIN_CIRCLE_RADIUS)
+    velo_frame = apply_rectangular_mask(velo_frame, [PATCH_X, PATCH_Y], PATCH_WIDTH, PATCH_HEIGHT)
 
-# Filter point cloud
-velo_frame = get_pcl_from_frame(dataset, frame)
-velo_frame = filter_ground_plane(velo_frame)
-# velo_frame = apply_circular_mask(velo_frame, [ORIGIN_X, ORIGIN_Y], ORIGIN_CIRCLE_RADIUS)
-velo_frame = apply_rectangular_mask(velo_frame, [PATCH_X, PATCH_Y], PATCH_WIDTH, PATCH_HEIGHT)
+    # Get data
+    pcl = list(np.asarray(velo_frame[:, [0, 1]]))
 
-# Get data
-pcl = list(np.asarray(velo_frame[:, [0, 1]]))
+    # Adaptively segment PCL data
+    clusters = cluster_kdtree(pcl, ALPHA, MIN_CLUSTER_LEN, MAX_CLUSTER_LEN)
+    print("Number of clusters:", len(clusters))
 
-# Adaptively segment PCL data
-c = cluster_kdtree(pcl, np.matlib.repmat(RADIUS, 1, len(pcl))[0])
-
-# Render 2D BEV scene with colorized clusters
-render_2Dbev(frame, velo_frame, c)
+    # Render 2D BEV scene with colorized clusters
+    render_2Dbev(frame, velo_frame, clusters)

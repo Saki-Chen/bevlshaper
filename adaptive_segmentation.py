@@ -8,7 +8,7 @@ def find_all_points_in_range(p, r, pcl):
     p_in_range = []
     for n in range(len(pcl)):
         p_tmp = pcl[n]
-        if not np.array_equal(p_tmp, p) and np.linalg.norm(p_tmp - p) <= r[n]:
+        if not np.array_equal(p_tmp, p) and np.linalg.norm(p_tmp - p) <= r:
             p_in_range.append(p_tmp)
     return np.asarray(p_in_range)
 
@@ -41,42 +41,47 @@ def better_isin(points, point):
 
 
 # Cluster K-D tree function
-def cluster_kdtree(pcl, a, min_cluster_len=4):
+def cluster_kdtree(pcl, a, min_cluster_len, max_cluster_len):
     # Init empty set of clusters
     clusters = []
     # Init empty list of checked points
     checked_p = []
     # Iterate over all points p
-    for n in range(len(pcl)):
+    # for n in range(len(pcl)):
+    n = 0
+    while n < len(pcl):
         # Print progress
         print("Iteration", n, "out of", len(pcl))
         # Select point p
         p = pcl[n]
         # If point p was not considered yet, continue
-        if not better_isin(checked_p, p):
-            cluster = [p]
-            # Iterate along cluster
-            k = 0
-            # Iterate over cluster while it is created to extend it
-            while k < len(cluster):
-                # Print progress
-                print_progress(k + 1, len(cluster))
-                # Attach iterate over cluster, select last added point
-                p_tmp = cluster[k]
-                # Set constant radius
-                # TODO - Make r relative to considered point to compensate resolution differences
-                r = a
-                # Select all points in range r from current point p
-                ps_in_range = find_all_points_in_range(p_tmp, r, ignore_points_from_array(pcl, cluster))
-                # Check if any point is in range
-                if ps_in_range.size > 0:
-                    # Extend current cluster by new point
-                    cluster = np.concatenate((cluster, ps_in_range), axis=0)
-                # Add point to checked points
-                checked_p.append(p_tmp)
-                k += 1
-            # Append complete cluster to set of clusters
-            if len(cluster) >= min_cluster_len:
-                clusters.append(cluster)
+        # if not better_isin(checked_p, p):
+        cluster = [p]
+        # Iterate along cluster
+        k = 0
+        # Iterate over cluster while it is created to extend it
+        while k < len(cluster):
+            # Print progress
+            print_progress(k + 1, len(cluster))
+            # Attach iterate over cluster, select last added point
+            p_tmp = cluster[k]
+            # Set adaptive radius
+            r = a * np.linalg.norm(p_tmp)
+            # Select all points in range r from current point p
+            pcl = ignore_points_from_array(pcl, cluster)
+            ps_in_range = find_all_points_in_range(p_tmp, r, pcl)
+            # Check if any point is in range
+            if ps_in_range.size > 0:
+                # Extend current cluster by new point
+                cluster = np.concatenate((cluster, ps_in_range), axis=0)
+            # Abort cluster creation if length reaches defined maximum length
+            if len(cluster) >= max_cluster_len:
+                print('')
+                break
+            k += 1
+        # Append complete cluster to set of clusters
+        if len(cluster) >= min_cluster_len:
+            clusters.append(cluster)
+        n += 1
     # Return set of clusters
     return np.asarray(clusters)
