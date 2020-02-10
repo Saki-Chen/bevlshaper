@@ -2,13 +2,13 @@
 import numpy as np
 import math
 GROUND_PLANE_REFLECTANCE = 0
-GROUND_PLANE_Z_UPPER_BORDER = 0
+GROUND_PLANE_Z_UPPER_BORDER = -1.1
 
 # Filter ground plane function
 def filter_ground_plane(pcl):
     filtered_pcl = []
     for point in pcl:
-        if not point[3] < GROUND_PLANE_REFLECTANCE or not point[2] < GROUND_PLANE_Z_UPPER_BORDER:
+        if not point[3] < GROUND_PLANE_REFLECTANCE and not point[2] < GROUND_PLANE_Z_UPPER_BORDER:
             filtered_pcl.append(point)
     return np.asarray(filtered_pcl)
 

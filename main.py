@@ -5,31 +5,34 @@ from pcl_filter import *
 import matplotlib.pyplot as plt
 
 # Constants
-COLORS = ['red', 'green', 'blue', 'yellow']
-ALPHA = 0.0257
-POINTS_RATIO = 0.1062
-MIN_CLUSTER_LEN = 22
-MAX_CLUSTER_LEN = 65
+MAX_RADIUS = 1
+POINTS_RATIO = 0.105
 
+# Origin mask
 ORIGIN_X = 0
 ORIGIN_Y = 0
 ORIGIN_CIRCLE_RADIUS = 6.1
-## Sample
+
+# Sample mask
 # PATCH_X = 8
 # PATCH_Y = 6
 # PATCH_WIDTH = 8
 # PATCH_HEIGHT = 6
-## Full
+
+# Full mask
 # PATCH_X = -18
 # PATCH_Y = -10.5
 # PATCH_WIDTH = 80
 # PATCH_HEIGHT = 21
-## Full lane
+
+# Full lane mask
 PATCH_X = -2
 PATCH_Y = -1.5
 PATCH_WIDTH = 40
 PATCH_HEIGHT = 12
 
+# Debug values
+COLORS = ['red', 'green', 'blue', 'yellow']
 
 # Get PCL from frame function
 def get_pcl_from_frame(data, frame, points=POINTS_RATIO):
@@ -47,11 +50,13 @@ def render_2Dbev(frame, data, clusters, points=POINTS_RATIO, colors=COLORS):
     point_size = 0.01 * (1. / points)
 
     # Extract coordinate ranges
-    z_values = data[:, 3]
+    # print(data)
     xy_values = data[:, [0, 1]]
+    # z_values = data[:, 3]
+    # print(xy_values)
 
     # Draw scatter plot
-    axis.scatter(*np.transpose(xy_values), s=point_size, c=z_values, cmap='gray')
+    axis.scatter(*np.transpose(xy_values), s=point_size, c='black', cmap='gray')
     axis.set_xlim(*axes_limits[0])
     axis.set_ylim(*axes_limits[1])
 
@@ -77,8 +82,14 @@ drive = '0001'
 dataset = load_dataset(date, drive)
 dataset = list(dataset.velo)
 
+# Set parameters
+alpha = 0.4
+beta = 1
+min_cluster_len = 22
+
 # Select frame
-for frame in [28, 38, 53]:
+# for frame in range(len(dataset)):
+for frame in [32]:
     # Filter point cloud
     velo_frame = get_pcl_from_frame(dataset, frame)
     velo_frame = filter_ground_plane(velo_frame)
@@ -89,8 +100,10 @@ for frame in [28, 38, 53]:
     pcl = list(np.asarray(velo_frame[:, [0, 1]]))
 
     # Adaptively segment PCL data
-    clusters = cluster_kdtree(pcl, ALPHA, MIN_CLUSTER_LEN, MAX_CLUSTER_LEN)
-    print("Number of clusters:", len(clusters))
+    clusters = cluster_kdtree(pcl, alpha, beta, min_cluster_len, MAX_RADIUS)
 
     # Render 2D BEV scene with colorized clusters
     render_2Dbev(frame, velo_frame, clusters)
+
+    # Log
+    print(len(clusters))
