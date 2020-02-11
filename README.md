@@ -12,9 +12,9 @@ Algorithm for bird's-eye-view L-shape fitting in 3D LIDAR point clouds from traf
 
 #### Foreword
 This project is inspired by the paper [Efficient L-Shape Fitting for Vehicle Detection Using Laser Scanners](https://www.ri.cmu.edu/wp-content/uploads/2017/07/Xiao-2017-Efficient-L-Shape-Fitting.pdf).
-As in the paper, a K-D tree algorithm is used for segmentation after point cloud filtering.
+As in the paper, a search tree algorithm is used for segmentation after point cloud filtering.
 This step is inspired by [Moving object classification using horizontal laser scan data](https://www.researchgate.net/profile/Huijing_Zhao/publication/224557150_Moving_object_classification_using_horizontal_laser_scan_data/links/00b7d520b05aa1a131000000/Moving-object-classification-using-horizontal-laser-scan-data.pdf).
-Within found clusters, L-shapes are detected.
+Within found clusters, L-shapes are detected. Therefore, rectangles are searched and reduced to L-shapes (oriented towards the sensing vehicle) afterwards.
 For easy prototyping and modelling, Python and the NumPy library are used instead of a more computationally powerful language.
 
 #### Prepare environment
@@ -36,5 +36,6 @@ python render_scene.py
 
 # Run segmentation and detection algorithm
 # See main.py for execution config
-python main.py
+# Use time for efficiency consideration
+time python main.py
 ```
