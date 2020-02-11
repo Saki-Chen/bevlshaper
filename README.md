@@ -17,6 +17,10 @@ This step is inspired by [Moving object classification using horizontal laser sc
 Within found clusters, L-shapes are detected. Therefore, rectangles are searched and reduced to L-shapes (oriented towards the sensing vehicle) afterwards.
 For easy prototyping and modelling, Python and the NumPy library are used instead of a more computationally powerful language.
 
+<p align="center">
+    <img src="pcl_data.gif" alt="Clustered point cloud data from bird's-eye-view with fitted L-shapes/rectangles"/>
+</p>
+
 #### Prepare environment
 ```bash
 conda create --name kitti -y python=3
