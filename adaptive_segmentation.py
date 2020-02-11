@@ -41,7 +41,7 @@ def better_isin(points, point):
 
 
 # Cluster K-D tree function
-def cluster_kdtree(pcl, a, b, min_cluster_len, max_radius):
+def cluster_tree(pcl, a, b, min_cluster_len, max_radius):
     # Init empty set of clusters
     clusters = []
     # Init empty list of checked points
