@@ -43,7 +43,7 @@ def get_pcl_from_frame(data, frame, points=POINTS_RATIO):
 
 
 # Render 2D bird's-eye-view scene from PCL data
-def render_2Dbev(frame, data, clusters, points=POINTS_RATIO, colors=COLORS):
+def render_2Dbev(frame, data, clusters, bboxes=[], points=POINTS_RATIO, colors=COLORS):
     # Init figure, define points
     f = plt.figure(figsize=(12, 8))
     axis = f.add_subplot(111, xticks=[], yticks=[])
@@ -102,8 +102,16 @@ for frame in [32]:
     # Adaptively segment PCL data
     clusters = cluster_kdtree(pcl, alpha, beta, min_cluster_len, MAX_RADIUS)
 
+    # Determine L-shapes from clusters
+    delta = 0.02
+    for cluster in clusters:
+        [a1, a2, a3, a4, b1, b2, b3, b4, c1, c2] = search_rectangle_fit(cluster, delta)
+        print("Cluster - rectangular fit:")
+        print([a1, a2, a3, a4, b1, b2, b3, b4, c1, c2])
+
     # Render 2D BEV scene with colorized clusters
-    render_2Dbev(frame, velo_frame, clusters)
+    bboxes = []
+    render_2Dbev(frame, velo_frame, clusters, bboxes)
 
     # Log
-    print(len(clusters))
+    print("Number of clusters:", len(clusters))
