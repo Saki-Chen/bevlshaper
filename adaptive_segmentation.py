@@ -130,6 +130,7 @@ def calculate_closeness(c1, c2, minimum_distance):
         d = np.amax([np.amin([d1[n], d2[n]]), minimum_distance])
         # Increase quality, quality increases faster if distances d are small
         quality = quality + 1 / d
+    # Return quality
     return quality
 
 
@@ -153,7 +154,8 @@ def search_rectangle_fit(cluster, delta):
     # Get related projection
     c1_max, c2_max = project_edge_points_on_angle(cluster, theta_max)
     # Get rectangle parameters based on highest-quality angle
-    c1_min, c2_min = np.amin(c1_max), np.amin(c2_max)
+    c1, c2 = np.amin(c1_max), np.amin(c2_max)
+    c3, c4 = np.amax(c1_max), np.amax(c2_max)
     # Rectangle parameter a1, b2, a3, b4
     v1 = np.cos(theta_max)
     # Rectangle parameter b1, b3
@@ -161,4 +163,11 @@ def search_rectangle_fit(cluster, delta):
     # Rectangle parameter a2, a4
     v3 = -np.sin(theta_max)
     # Rectangle parameter form: a1, a2, a3, a4, b1, b2, b3, b4, c1, c2
-    return [v1, v3, v1, v3, v2, v1, v2, v1, c1_min, c2_min]
+    return [v1, v2, c1, v3, v1, c2, v1, v2, c3, v3, v1, c4]
+
+
+# Calculate intersection point function
+def calc_intersection_point(a1, b1, c1, a2, b2, c2):
+    x = (c1 / b1 - c2 / b2) * np.power(a1 / b1 - a2 / b2, -1)
+    y = (c1 - a1 * x) / b1
+    return np.asarray([x, y])

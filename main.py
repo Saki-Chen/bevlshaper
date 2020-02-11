@@ -32,7 +32,7 @@ PATCH_WIDTH = 40
 PATCH_HEIGHT = 12
 
 # Debug values
-COLORS = ['red', 'green', 'blue', 'yellow']
+COLORS = ['green', 'blue', 'yellow']
 
 # Get PCL from frame function
 def get_pcl_from_frame(data, frame, points=POINTS_RATIO):
@@ -43,7 +43,7 @@ def get_pcl_from_frame(data, frame, points=POINTS_RATIO):
 
 
 # Render 2D bird's-eye-view scene from PCL data
-def render_2Dbev(frame, data, clusters, bboxes=[], points=POINTS_RATIO, colors=COLORS):
+def render_2Dbev(frame, data, clusters, lpoints=[], points=POINTS_RATIO, colors=COLORS):
     # Init figure, define points
     f = plt.figure(figsize=(12, 8))
     axis = f.add_subplot(111, xticks=[], yticks=[])
@@ -67,6 +67,14 @@ def render_2Dbev(frame, data, clusters, bboxes=[], points=POINTS_RATIO, colors=C
         axis.scatter(*np.transpose(cluster), s=point_size, c=colors[cntc], cmap='gray')
         cnt += 1
 
+    # Draw L-shapes
+    for lpoints_cluster in lpoints:
+        lp1, lp2, lp3, lp4 = lpoints_cluster[0], lpoints_cluster[1], lpoints_cluster[2], lpoints_cluster[3]
+        axis.plot([lp1[0], lp2[0]], [lp1[1], lp2[1]], 'red')
+        axis.plot([lp2[0], lp3[0]], [lp2[1], lp3[1]], 'red')
+        axis.plot([lp3[0], lp4[0]], [lp3[1], lp4[1]], 'red')
+        axis.plot([lp4[0], lp1[0]], [lp4[1], lp1[1]], 'red')
+
     # Save frame and close plot
     filename = 'video/frame_{0:0>4}.png'.format(frame)
     plt.savefig(filename)
@@ -88,8 +96,7 @@ beta = 1
 min_cluster_len = 22
 
 # Select frame
-# for frame in range(len(dataset)):
-for frame in [32]:
+for frame in range(len(dataset)):
     # Filter point cloud
     velo_frame = get_pcl_from_frame(dataset, frame)
     velo_frame = filter_ground_plane(velo_frame)
@@ -104,14 +111,23 @@ for frame in [32]:
 
     # Determine L-shapes from clusters
     delta = 0.02
+    # Init empty array for L-shape points
+    lpoints = []
     for cluster in clusters:
-        [a1, a2, a3, a4, b1, b2, b3, b4, c1, c2] = search_rectangle_fit(cluster, delta)
-        print("Cluster - rectangular fit:")
-        print([a1, a2, a3, a4, b1, b2, b3, b4, c1, c2])
+        [a1, b1, c1, a2, b2, c2, a3, b3, c3, a4, b4, c4] = search_rectangle_fit(cluster, delta)
+        # print("Rectangular parameters:")
+        # print([a1, a2, a3, a4, b1, b2, b3, b4, c1, c2])
+        [x1, y1] = calc_intersection_point(a1, b1, c1, a2, b2, c2)
+        [x2, y2] = calc_intersection_point(a2, b2, c2, a3, b3, c3)
+        [x3, y3] = calc_intersection_point(a3, b3, c3, a4, b4, c4)
+        [x4, y4] = calc_intersection_point(a4, b4, c4, a1, b1, c1)
+        lpoints.append([[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
+
+    # Print L-shape points
+    print("L-shape points:", lpoints)
 
     # Render 2D BEV scene with colorized clusters
-    bboxes = []
-    render_2Dbev(frame, velo_frame, clusters, bboxes)
+    render_2Dbev(frame, velo_frame, clusters, lpoints)
 
     # Log
     print("Number of clusters:", len(clusters))
